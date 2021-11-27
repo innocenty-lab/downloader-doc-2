@@ -1,9 +1,9 @@
 import 'dart:io';
-import 'package:path_provider/path_provider.dart' as p;
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:progress_dialog/progress_dialog.dart';
 import 'package:permission_handler/permission_handler.dart';
+// import 'package:progress_dialog/progress_dialog.dart';
+import 'package:sn_progress_dialog/sn_progress_dialog.dart';
 
 void main() {
   runApp(MyApp());
@@ -30,12 +30,10 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
 
-
   String? _fileFullPath;
   String? progress;
   bool _isLoading = false;
-  // final urlPdf = "http://www.pdf995.com/samples/pdf.pdf";
-  final urlPdf = "https://kg.bisakode.com/api/dokumen/4/download";
+  final urlPdf = "http://www.pdf995.com/samples/pdf.pdf";
 
   Dio? dio;
 
@@ -46,7 +44,6 @@ class _MyHomePageState extends State<MyHomePage> {
     super.initState();
   }
 
-  //================================Buat Folder Download==============================
   Future<String> createFolder(String fName) async {
     final folderName = fName;
     final path = Directory("storage/emulated/0/$folderName");
@@ -63,50 +60,102 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
-  //=========================Get App Direktory==========================================
-  // Future <List<Directory>?> _getExternalStoragePath(){
-  //   return p.getExternalStorageDirectories(type: p.StorageDirectory.documents);
+  // Future _downloadAndSaveFileToStorage(String urlPath) async {
+
+  //   final name = urlPdf.split('/').last;
+
+  //   ProgressDialog pr;
+  //   pr = ProgressDialog(context, type: ProgressDialogType.Normal);
+  //   pr.style(message: "Download file ...");
+
+  //   try{
+  //     await pr.show();
+  //     final Directory _documentDir = Directory('/storage/emulated/0/MyDocuments/$name');
+  //     await dio!.download(urlPath, _documentDir.path, onReceiveProgress: (rec, total){
+  //       setState(() {
+  //         _isLoading = true;
+  //         progress = ((rec / total)*100).toStringAsFixed(0) + " %";
+  //         print(progress);
+  //         pr.update(message: "Please wait : $progress");
+  //       });
+  //     });
+  //     pr.hide();
+  //     _fileFullPath = _documentDir.path;
+  //   } catch (e) {
+  //     print(e);
+  //   }
+
+  //   setState(() {
+  //     _isLoading = false;
+  //   });
+
   // }
 
-  //================================ Downloader Document====================================
+  // Future _downloadAndSaveFileToStorage(String urlPath) async {
+
+  //   final name = urlPdf.split('/').last;
+
+  //   ProgressDialog pd = ProgressDialog(context: context);
+
+  //   try{
+  //     pd.show(
+  //       max: 100, 
+  //       msg: 'Preparing Download...', 
+  //       progressType: ProgressType.valuable
+  //     );
+  //     final Directory _documentDir = Directory('/storage/emulated/0/KGDocuments/$name');
+  //     await dio!.download(urlPath, _documentDir.path, onReceiveProgress: (rec, total){
+  //       setState(() {
+  //         _isLoading = true;
+  //         int progress = (((rec / total) * 100).toInt());
+  //         print(progress);
+  //         pd.update(value: progress, msg: 'File Downloading');
+  //       });
+  //     });
+  //     pd.close();
+  //     _fileFullPath = _documentDir.path;
+  //   } catch (e) {
+  //     print(e);
+  //   }
+
+  //   setState(() {
+  //     _isLoading = false;
+  //   });
+
+  // }
+
   Future _downloadAndSaveFileToStorage(String urlPath) async {
 
     final name = urlPdf.split('/').last;
 
-    ProgressDialog pr;
-    pr = ProgressDialog(context, type: ProgressDialogType.Normal);
-    pr.style(message: "Download file ...");
+    ProgressDialog pd = ProgressDialog(context: context);
 
     try{
 
-      //================== show dialog ==================
-      await pr.show();
+      await pd.show(
+        max: 100,
+        msg: 'Preparing Download...',
+        progressType: ProgressType.valuable,
+        backgroundColor: Color(0xff212121),
+        progressValueColor: Color(0xff3550B4),
+        progressBgColor: Colors.white70,
+        msgColor: Colors.white,
+        valueColor: Colors.white
+      );
 
-      // final dirList = await _getExternalStoragePath();
-      // final path = dirList![0].path;
-      // final file = File('$path/$name');
-
-      final Directory _documentDir = Directory('/storage/emulated/0/KGTesting/$name');
-
-      // await dio!.download(urlPath, file.path, onReceiveProgress: (rec, total){
+      final Directory _documentDir = Directory('/storage/emulated/0/MYDocuments/$name');
       await dio!.download(urlPath, _documentDir.path, onReceiveProgress: (rec, total){
         setState(() {
           _isLoading = true;
-          progress = ((rec / total)*100).toStringAsFixed(0) + " %";
+          int progress = (((rec / total) * 100).toInt());
           print(progress);
-
-          //================= update dialog ===============
-          pr.update(message: "Please wait : $progress");
+          pd.update(value: progress, msg: 'File Downloading');
         });
       });
-
-      //============== hide dialog ==============
-      pr.hide();
-
       _fileFullPath = _documentDir.path;
-      
     } catch (e) {
       print(e);
+      pd.close();
     }
 
     setState(() {
@@ -140,5 +189,4 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
     );
   }
-
 }
